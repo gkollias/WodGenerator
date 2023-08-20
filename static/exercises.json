@@ -1,0 +1,64 @@
+{
+    "Weightlifting": {
+      "Clean": "Barbell",
+      "Jerk": "Barbell",
+      "Snatch": "Barbell",
+      "Deadlift": "Barbell",
+      "Back Squat": "Barbell",
+      "Front Squat": "Barbell",
+      "Overhead Squat": "Barbell",
+      "Push Press": "Barbell",
+      "Bench Press": "Barbell and Bench",
+      "Clean and Jerk": "Barbell",
+      "Snatch Balance": "Barbell",
+      "Thrusters": "Barbell",
+      "Sumo Deadlift High Pull": "Barbell",
+      "Split Jerk": "Barbell",
+      "Dumbbell Thrusters": "Dumbbells",
+      "Dumbbell Deadlift": "Dumbbell",
+      "Dumbbell Squat": "Dumbbells",
+      "Dumbbell Snatch": "Dumbbell",
+      "Dumbbell Lunges": "Dumbbell",
+      "Dumbbell Clean and Jerk": "Dumbbell"
+    },
+    "Gymnastics": {
+      "Pull-ups": "Pull-up bar",
+      "Push-ups": "No equipment",
+      "Dips": "Dip Bars or Rings",
+      "Muscle-ups": "Rings or Pull-up Bar",
+      "Handstand Push-ups": "Wall",
+      "Rope Climb": "Rope",
+      "Toes to Bar": "Pull-up bar",
+      "Ring Rows": "Rings",
+      "Chest to Bar Pull-ups": "Pull-up bar",
+      "Handstand Walks": "Open space",
+      "Pistol Squats": "No equipment",
+      "Bar Muscle-ups": "Pull-up Bar"
+    },
+    "Monostructural": {
+      "Running": "No equipment",
+      "Rowing": "Rowing Machine",
+      "Double Unders": "Jump Rope",
+      "Cycling": "Bicycle or Stationary Bike",
+      "Swimming": "Swimming Pool",
+      "Skiing": "Ski Ergometer",
+      "Single Unders": "Jump Rope",
+      "Pregnancy-safe Cardio (low-impact)": "Step-up platforms, Walking Shoes"
+    },
+    "Misc": {
+      "Box Jumps": "Plyo Box",
+      "Wall Balls": "Medicine Ball and Wall",
+      "Kettlebell Swings": "Kettlebell",
+      "GHD Sit-ups": "GHD Machine",
+      "Burpees": "No equipment",
+      "Medicine Ball Cleans": "Medicine Ball",
+      "Walking Lunges": "No equipment or Dumbbells for added weight",
+      "Farmer's Walk": "Dumbbells or Kettlebells",
+      "Sled Push/Pull": "Weighted Sled",
+      "Dumbbell Swing": "Dumbbell",
+      "Dumbbell Renegade Row": "Dumbbells",
+      "Dumbbell Man Makers": "Dumbbells",
+      "Step-ups": "Box or Step"
+    }
+  }
+  
