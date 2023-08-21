@@ -7,95 +7,104 @@ const WodGenerator = ({ equipment }) => {
   const [wodDescription, setWodDescription] = useState();
 
   useEffect(() => {
-    // Call your function here on mount
-    updateWodDescription();
-  }, []);  // Empty dependency array ensures this runs only once when the component mounts
-
-  if (!equipment?.includes("No equipment")) {
-    equipment.push("No equipment");
-  }
+      setWodDescription(generator(equipment));
+  }, [equipment]);
 
   const updateWodDescription = () => {
-    const currentTime = new Date().toLocaleTimeString(); // Note: You declared currentTime but didn't use it in this function. Do you intend to use it somewhere?
-    setWodDescription(generator(equipment));
+      setWodDescription(generator(equipment));
   };
-  
+
   return (
-    <View>
-      <Text>{wodDescription}</Text>
-      <Button title="Generate another workout" onPress={updateWodDescription} />
-    </View>
+      <View>
+          <Text>{wodDescription}</Text>
+          <Button title="Generate another workout" onPress={updateWodDescription} />
+      </View>
   );
-}
+};
 
-function generator(equipment) {
-  //Filter by equipment
-  let equipmentExercises = [];
-  let weightliftingExercises = [];
-  let gymnasticsExercises = [];
-  let monostructuralExercises = [];
-  let miscExercises = [];
-  categories = Object.keys(exercises);
-  
-categories.map( category => Object.entries(exercises[category])
-  .filter(([key, value]) => equipment.includes(value))
-  .map(([key, value]) => equipmentExercises.push(key)));
+const generator = (equipment) => {
+  const { equipmentExercises, weightliftingExercises, gymnasticsExercises, monostructuralExercises, miscExercises } = filterExercisesByEquipment(equipment);
 
-  Object.entries(exercises[categories[0]])
-    .filter(([key, value]) => equipment.includes(value))
-    .map(([key, value]) => weightliftingExercises.push(key));
+  const wodType = "AMRAP";  // hardcoded for now; you might use getWodType(wodTypes) in the future
+  const numOfExercises = generateNumberOfExercises(wodType);
+  const selectedExercises = getRandomExercises(equipmentExercises, numOfExercises, equipment);
+  const repScheme = getRepScheme(wodType, selectedExercises, monostructuralExercises);
+  const rounds = getRounds(wodType);
+  const time = getTime(wodType, selectedExercises, rounds);
 
-    Object.entries(exercises[categories[1]])
-    .filter(([key, value]) => equipment.includes(value))
-    .map(([key, value]) => gymnasticsExercises.push(key));
+  return getWorkoutDescription(wodType, time, rounds, repScheme, selectedExercises);
+};
 
-    Object.entries(exercises[categories[2]])
-    .filter(([key, value]) => equipment.includes(value))
-    .map(([key, value]) => monostructuralExercises.push(key));
+const filterExercisesByEquipment = (equipment) => {
+  if (!equipment.includes("No equipment")) {
+      equipment.push("No equipment");
+  }
 
-    Object.entries(exercises[categories[3]])
-    .filter(([key, value]) => equipment.includes(value))
-    .map(([key, value]) => miscExercises.push(key));
+  const equipmentExercises = [];
+  const weightliftingExercises = [];
+  const gymnasticsExercises = [];
+  const monostructuralExercises = [];
+  const miscExercises = [];
 
-    //Calculate type
-    let wodType = "AMRAP";//getWodType(wodTypes);
-    console.log("Type:", wodType);
-    //Calculate number of exercises
-    let numOfExercises = generateNumberOfExercises(wodType);
-    console.log("num:", numOfExercises);
-    //get exercises
-    let selectedExercises = getExercises(numOfExercises, wodType, equipmentExercises, weightliftingExercises, gymnasticsExercises, monostructuralExercises, miscExercises);
-    console.log("selectedExercises:", selectedExercises);
+  for (let category in exercises) {
+    exercises[category].forEach(exercise => {
+      if (equipment.includes(exercise.equipment)) {
+        equipmentExercises.push(exercise.name);
+        switch(category) {
+          case "Weightlifting":
+            weightliftingExercises.push(exercise.name);
+            break;
+          case "Gymnastics":
+            gymnasticsExercises.push(exercise.name);
+            break;
+          case "Monostructural":
+            monostructuralExercises.push(exercise.name);
+            break;
+          case "Misc":
+            miscExercises.push(exercise.name);
+            break;
+          default:
+            break;
+        }
+      }
+    });
+  }
 
-    //Calculate rep scheme
-    repScheme = getRepScheme(wodType, selectedExercises, monostructuralExercises);
-    console.log("Scheme:", repScheme);
-    //Calculate rounds
-    const rounds = getRounds(wodType);
-    //Calculate time
-    time = getTime(wodType, selectedExercises, rounds);
-    console.log("Time:", time);
+  return {
+      equipmentExercises,
+      weightliftingExercises,
+      gymnasticsExercises,
+      monostructuralExercises,
+      miscExercises
+  };
+};
 
+const hasCommonWordWithArray = (str, arrayOfStrings, equipment) => {
+  const words = new Set(str.split(/\s+/).filter(word => !equipment.includes(word)));  // Split string by spaces to get words, remove exceptions and convert to set
+  console.log(equipment);
+  console.log("w",words);
+  return arrayOfStrings.some(existingStr => {
+      const existingWords = existingStr.split(/\s+/).filter(word => !equipment.includes(word)); // Split existing string into words and remove exception words
+      return existingWords.some(word => words.has(word));  // Check if any word exists in the set of words
+  });
+};
 
-    let wodDescription = getWorkoutDescription(wodType, time, rounds, repScheme, selectedExercises);
-    console.log(wodDescription);
+const getRandomExercises = (equipmentExercises, numOfExercises, equipment) => {
+  const randomIndexes = new Set();
+  const selectedExercises = [];
 
-    return wodDescription;
-}
+  while (randomIndexes.size < numOfExercises && randomIndexes.size < equipmentExercises.length) {
+      const randomIndex = Math.floor(Math.random() * equipmentExercises.length);
+      const exerciseDescription = equipmentExercises[randomIndex];
+      
+      if (!hasCommonWordWithArray(exerciseDescription, selectedExercises, equipment)) {
+          randomIndexes.add(randomIndex);
+          selectedExercises.push(exerciseDescription);
+      }
+  }
+  return Array.from(randomIndexes).map(index => equipmentExercises[index]);
+};
 
-function getExercises(numOfExercises, wodType, equipmentExercises, weightliftingExercises, gymnasticsExercises, monostructuralExercises, miscExercises) {
-  let selectedExercises = [];
-
-  // selectedExercises.push(weightliftingExercises[Math.floor(Math.random() * weightliftingExercises.length)]);
-  // selectedExercises.push(gymnasticsExercises[Math.floor(Math.random() * gymnasticsExercises.length)]);
-  // selectedExercises.push(monostructuralExercises[Math.floor(Math.random() * monostructuralExercises.length)]);
-  // selectedExercises.push(miscExercises[Math.floor(Math.random() * miscExercises.length)]);
-
-  //random approach
-  randomIndexes = getRandomUniqueIndexes(equipmentExercises, numOfExercises);
-  randomIndexes.map(index => selectedExercises.push(equipmentExercises[index]));
-  return selectedExercises;
-}
 
 function getWodType(wodTypes) {
   let randomIndex = Math.floor(Math.random() * wodTypes.length);
@@ -328,14 +337,6 @@ function randomMultipleOfFive(limit, weights) {
   // Randomly select an index from the weighted array
   const randomIndex = Math.floor(Math.random() * weightedPossibilities.length);
   return weightedPossibilities[randomIndex];
-}
-
-function getRandomUniqueIndexes(array, times) {
-  let randomIndexes = new Set();
-  while(randomIndexes.size < times) {
-      randomIndexes.add(Math.floor(Math.random() * array.length));
-  }
-  return Array.from(randomIndexes);
 }
 
 function generateUniformSequence(x, y, probSame = 0.3, probHalf = 0.3) {
