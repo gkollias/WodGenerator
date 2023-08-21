@@ -7,11 +7,11 @@ const WodGenerator = ({ equipment }) => {
   const [wodDescription, setWodDescription] = useState();
 
   useEffect(() => {
-      setWodDescription(generator(equipment));
+      setWodDescription(generateWorkout(equipment));
   }, [equipment]);
 
   const updateWodDescription = () => {
-      setWodDescription(generator(equipment));
+      setWodDescription(generateWorkout(equipment));
   };
 
   return (
@@ -22,18 +22,45 @@ const WodGenerator = ({ equipment }) => {
   );
 };
 
-const generator = (equipment) => {
-  const { equipmentExercises, weightliftingExercises, gymnasticsExercises, monostructuralExercises, miscExercises } = filterExercisesByEquipment(equipment);
+const generateWorkout = (equipment) => {
+  const {
+    equipmentExercises,
+    weightliftingExercises,
+    gymnasticsExercises,
+    monostructuralExercises,
+    miscExercises
+  } = filterExercisesByEquipment(equipment);
 
-  const wodType = "AMRAP";  // hardcoded for now; you might use getWodType(wodTypes) in the future
-  const numOfExercises = generateNumberOfExercises(wodType);
-  const selectedExercises = getRandomExercises(equipmentExercises, numOfExercises, equipment);
-  const repScheme = getRepScheme(wodType, selectedExercises, monostructuralExercises);
-  const rounds = getRounds(wodType);
-  const time = getTime(wodType, selectedExercises, rounds);
+  const wodType = getWodType(wodTypes);
+  console.log("wodType:", wodType);
+  let selectedExercises, repScheme, rounds, workoutTime, totalWorkoutEstimatedTime;
 
-  return getWorkoutDescription(wodType, time, rounds, repScheme, selectedExercises);
+  do {
+    const numOfExercises = generateNumberOfExercises(wodType);
+    selectedExercises = getRandomExercises(equipmentExercises, numOfExercises, equipment, wodType);
+    repScheme = getRepScheme(wodType, selectedExercises, monostructuralExercises);
+    rounds = getRounds(wodType);
+    
+    if(isWorkoutFixedTiming(wodType)) {
+      workoutTime = getTime(wodType, selectedExercises, rounds, totalWorkoutEstimatedTime);
+      break;
+    }
+    totalWorkoutEstimatedTime = estimateWorkoutDuration(selectedExercises, repScheme, rounds);
+    workoutTime = getTime(wodType, selectedExercises, rounds, totalWorkoutEstimatedTime);
+
+    workoutTimeInSec = workoutTime * 60;
+    console.log("workout time:", workoutTime);
+    console.log("workout time(sec):", workoutTimeInSec);
+    console.log("totalWorkoutEstimatedTime:", totalWorkoutEstimatedTime);
+    console.log("\n\n");
+  } while ((totalWorkoutEstimatedTime > workoutTimeInSec || workoutTime > 45 || workoutTime < 5));
+
+  return getWorkoutDescription(wodType, workoutTime, rounds, repScheme, selectedExercises);
 };
+
+const isWorkoutFixedTiming = (wodType) => {
+  return wodType === "Tabata" || wodType === "EMOM";
+}
 
 const filterExercisesByEquipment = (equipment) => {
   if (!equipment.includes("No equipment")) {
@@ -81,15 +108,13 @@ const filterExercisesByEquipment = (equipment) => {
 
 const hasCommonWordWithArray = (str, arrayOfStrings, equipment) => {
   const words = new Set(str.split(/\s+/).filter(word => !equipment.includes(word)));  // Split string by spaces to get words, remove exceptions and convert to set
-  console.log(equipment);
-  console.log("w",words);
   return arrayOfStrings.some(existingStr => {
       const existingWords = existingStr.split(/\s+/).filter(word => !equipment.includes(word)); // Split existing string into words and remove exception words
       return existingWords.some(word => words.has(word));  // Check if any word exists in the set of words
   });
 };
 
-const getRandomExercises = (equipmentExercises, numOfExercises, equipment) => {
+const getRandomExercises = (equipmentExercises, numOfExercises, equipment, wodType) => {
   const randomIndexes = new Set();
   const selectedExercises = [];
 
@@ -97,7 +122,7 @@ const getRandomExercises = (equipmentExercises, numOfExercises, equipment) => {
       const randomIndex = Math.floor(Math.random() * equipmentExercises.length);
       const exerciseDescription = equipmentExercises[randomIndex];
       
-      if (!hasCommonWordWithArray(exerciseDescription, selectedExercises, equipment)) {
+      if (!hasCommonWordWithArray(exerciseDescription, selectedExercises, equipment) && !isExerciseWodTypeExcluded(exerciseDescription, wodType)) {
           randomIndexes.add(randomIndex);
           selectedExercises.push(exerciseDescription);
       }
@@ -105,9 +130,89 @@ const getRandomExercises = (equipmentExercises, numOfExercises, equipment) => {
   return Array.from(randomIndexes).map(index => equipmentExercises[index]);
 };
 
+const isExerciseWodTypeExcluded = (exerciseDescription, wodType) => {
+  switch(wodType) {
+    case "For Time":
+      return false;
+    case "AMRAP":
+      return false;
+    case "EMOM":
+      return false;
+    case "Tabata":
+      if(exerciseDescription === "Running")
+        return true;
+      return false;
+    case "Ladder":
+      if(exerciseDescription === "Running")
+        return true;
+      return false;
+    default:
+      return false;
+  }
+};
+
+const estimateWorkoutDuration = (selectedExercises, repScheme, rounds) => {
+  let roundDuration = 0;
+  selectedExercises.forEach((selectedExerciseName, index) => {
+    let exerciseData;
+    let isMonostructural = false;
+    for (const category in exercises) {
+      const found = exercises[category].find(exercise => exercise.name === selectedExerciseName);
+      isMonostructural = exercises["Monostructural"].find(exercise => exercise.name === selectedExerciseName);
+      if (found) {
+        exerciseData = found;
+        break;
+      }
+    }
+
+    if (!exerciseData) {
+      console.warn("Exercise not found:", selectedExerciseName);
+      return; // Skip the current iteration
+    }
+
+    let reps = repScheme[index];
+    
+    
+    console.log("exerciseData:", exerciseData);
+    console.log("repScheme[index]:", reps);
+
+    if(isMonostructural) {
+      reps = repScheme[index].replace(/\D/g, '');
+      if(repScheme[index].includes("cal")){
+        reps = reps / 5;//reps are per 5 cal duration
+      }
+      else {
+        reps = reps / 100;//reps are per 100 meters duration
+      }
+    }
+    roundDuration += exerciseData.averageTime * reps;
+    console.log("roundDuration:", roundDuration);
+
+  });
+
+  //assume fatigue and transition time increasing round by round
+  let totalEstimatedWorkoutTime = 0;
+  let transitionTime = 3;
+  let estimatedRoundDuration = roundDuration;
+  for(i = 0; i < rounds; i++){
+    transitionTime = selectedExercises.length * transitionTime ;//Added 3 seconds transition time
+    
+    totalEstimatedWorkoutTime = estimatedRoundDuration + transitionTime;
+    
+    estimatedRoundDuration = estimatedRoundDuration * 1.2;//increasing round time accumulating fatigue
+    transitionTime = transitionTime * 1.2;//increasing transition time
+  }
+
+  return totalEstimatedWorkoutTime;
+};
+
+
+
 
 function getWodType(wodTypes) {
-  let randomIndex = Math.floor(Math.random() * wodTypes.length);
+  let weights = [0.30, 0.50, 0.20, 0.10, 0.00];
+  let randomIndex = generateWeightedRandom(0, wodTypes.length-1, weights);
+
   return wodTypes[randomIndex];
 }
 
@@ -116,6 +221,7 @@ function getRounds(wodType) {
     case "For Time":
       return 5;
     case "AMRAP":
+      return 1;
     case "EMOM":
       return 4;
     case "Tabata":
@@ -157,10 +263,11 @@ function getRepScheme(wodType, selectedExercises, monostructuralExercises) {
       });
       return scheme;
     case "Ladder":
-      // Get random parameters
+      // Get random parameters for the ladder pattern
       const min = Math.floor(Math.random() * 10);
-      const max = min + Math.floor(Math.random() * 20);
-      const step = Math.ceil(Math.random() * 5);
+      const max = min + 10 + Math.floor(Math.random() * 10);  // Ensures max is at least 10 more than min
+      const difference = max - min;
+      const step = Math.ceil(Math.random() * difference);     // Ensures step is never greater than difference
       const direction = Math.random() < 0.5 ? 'ascending' : 'descending';
 
       return getRandomLadder(min, max, step, direction);
@@ -216,11 +323,11 @@ function getWorkoutDescription(wodType, time, rounds, repScheme, selectedExercis
   }
 }
 
-function getTime(wodType, selectedExercises, rounds) {
+function getTime(wodType, selectedExercises, rounds, totalWorkoutEstimatedTime) {
   let randomTime = getRandomTimeWeighted(10, 25);
   switch(wodType) {
     case "For Time":
-      return randomTime;
+      return Math.floor((totalWorkoutEstimatedTime + (totalWorkoutEstimatedTime * 0.3))/60);;
     case "AMRAP":
       return randomTime;
     case "EMOM":
@@ -268,23 +375,28 @@ function getRandomLadder(min, max, step, direction) {
 
 // Function to generate weighted random numbers
 function generateWeightedRandom(min, max, weights) {
+  if (weights.length !== max - min + 1) {
+    throw new Error('Weights array length must be equal to max - min + 1');
+  }
+
   // Generate a random number between 0 and the sum of the weights
   let randomNum = Math.random() * weights.reduce((a, b) => a + b);
   let weightSum = 0;
 
   // Go through all the weights
   for (let i = 0; i < weights.length; i++) {
-      weightSum += weights[i]; // add the weight to the sum
+    weightSum += weights[i]; // add the weight to the sum
 
-      // If this weight brings the sum over the random number, return the corresponding number
-      if (randomNum < weightSum) {
-          return i + min;
-      }
+    // If this weight brings the sum over the random number, return the corresponding number
+    if (randomNum < weightSum) {
+      return i + min;
+    }
   }
 }
 
+
 function generateNumberOfExercises(wodType) {
-  let weights = [0.01, 0.25, 0.35, 0.27, 0.12];
+  let weights = [0.00, 0.25, 0.35, 0.27, 0.13];
   let randomNumber = generateWeightedRandom(1, 5, weights);
 
   return randomNumber;
@@ -296,9 +408,9 @@ function getRandomMonostructural(exercise, wodType) {
       if( wodType === "EMOM")
         return "200m";
       else
-        return "400 m";
+        return "400m";
     default:
-      return "20 cal";
+      return "15 cal";
   }
 }
 function getRandomReps() {

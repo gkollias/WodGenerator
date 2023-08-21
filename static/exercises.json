@@ -22,35 +22,34 @@
       {"name": "Dumbbell Clean and Jerk", "equipment": "Dumbbell", "averageTime": 5}
   ],
   "Gymnastics": [
-      {"name": "Pull-ups", "equipment": "Pull-up bar", "averageTime": 1},
-      {"name": "Push-ups", "equipment": "No equipment", "averageTime": 1},
-      {"name": "Dips", "equipment": "Dip Bars or Rings", "averageTime": 2},
+      {"name": "Pull-ups", "equipment": "Pull-up bar", "averageTime": 3},
+      {"name": "Push-ups", "equipment": "No equipment", "averageTime": 3},
+      {"name": "Dips", "equipment": "Dip Bars or Rings", "averageTime": 3},
       {"name": "Muscle-ups", "equipment": "Rings or Pull-up Bar", "averageTime": 4},
       {"name": "Handstand Push-ups", "equipment": "Wall", "averageTime": 3},
       {"name": "Rope Climb", "equipment": "Rope", "averageTime": 15},
       {"name": "Toes to Bar", "equipment": "Pull-up bar", "averageTime": 2},
-      {"name": "Ring Rows", "equipment": "Rings", "averageTime": 2},
+      {"name": "Ring Rows", "equipment": "Rings", "averageTime": 3},
       {"name": "Chest to Bar Pull-ups", "equipment": "Pull-up bar", "averageTime": 1},
       {"name": "Handstand Walks", "equipment": "Open space", "averageTime": 10},  // This is per meter
-      {"name": "Pistol Squats", "equipment": "No equipment", "averageTime": 2},
+      {"name": "Pistol Squats", "equipment": "No equipment", "averageTime": 3},
       {"name": "Bar Muscle-ups", "equipment": "Pull-up Bar", "averageTime": 4}
   ],
   "Monostructural": [
-      {"name": "Running", "equipment": "No equipment", "averageTime": 15},  // This is per 100m
-      {"name": "Rowing", "equipment": "Rowing Machine", "averageTime": 20},  // This is per 100m
-      {"name": "Double Unders", "equipment": "Jump Rope", "averageTime": 0.5},
+      {"name": "Running", "equipment": "No equipment", "averageTime": 18},  // This is per 100m
+      {"name": "Rowing", "equipment": "Rowing Machine", "averageTime": 20},  // This is per 100m / 5 cal
       {"name": "Cycling", "equipment": "Bicycle or Stationary Bike", "averageTime": 30},  // This is per 100m
-      {"name": "Swimming", "equipment": "Swimming Pool", "averageTime": 40},  // This is per 100m
+      {"name": "Swimming", "equipment": "Swimming Pool", "averageTime": 50},  // This is per 100m
       {"name": "Skiing", "equipment": "Ski Ergometer", "averageTime": 20},  // This is per 100m
-      {"name": "Single Unders", "equipment": "Jump Rope", "averageTime": 0.6},
-      {"name": "Pregnancy-safe Cardio (low-impact)", "equipment": "Step-up platforms, Walking Shoes", "averageTime": 60}  // This is per minute
   ],
   "Misc": [
+      {"name": "Single Unders", "equipment": "Jump Rope", "averageTime": 0.6},
+      {"name": "Double Unders", "equipment": "Jump Rope", "averageTime": 0.5},
       {"name": "Box Jumps", "equipment": "Plyo Box", "averageTime": 2},
       {"name": "Wall Balls", "equipment": "Medicine Ball and Wall", "averageTime": 3},
       {"name": "Kettlebell Swings", "equipment": "Kettlebell", "averageTime": 2},
       {"name": "GHD Sit-ups", "equipment": "GHD Machine", "averageTime": 2},
-      {"name": "Burpees", "equipment": "No equipment", "averageTime": 3},
+      {"name": "Burpees", "equipment": "No equipment", "averageTime": 5},
       {"name": "Medicine Ball Cleans", "equipment": "Medicine Ball", "averageTime": 3},
       {"name": "Walking Lunges", "equipment": "No equipment or Dumbbells for added weight", "averageTime": 2},
       {"name": "Farmer's Walk", "equipment": "Dumbbells or Kettlebells", "averageTime": 10},  // This is per meter
