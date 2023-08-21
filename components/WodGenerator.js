@@ -275,41 +275,82 @@ function getRepScheme(wodType, selectedExercises, monostructuralExercises) {
 
 const getWeightScheme = (wodType, selectedExercises, repScheme) => {
   let scheme = [];
-  switch(wodType) {
-    case "For Time":
-    case "AMRAP":
-    case "EMOM":
-    case "Tabata":
-      console.log("getWeightScheme switch");
-      selectedExercises.map( (selectedExerciseName, index) => {
-        let exerciseData;
-        for (const category in exercises) {
-          const found = exercises[category].find(exercise => exercise.name === selectedExerciseName);
-          if (found) {
-            exerciseData = found;
-            break;
-          }
-        }
-        const weight = getWeightForRepScheme(wodType, exerciseData, repScheme[index]);
-        scheme.push(weight);
-      });
-      
-      console.log("Scheme:", scheme);
-      return scheme;
-    case "Ladder":
-      return [];//unimplemented
-    default:
-      return [];
-  }
+
+  selectedExercises.map( (selectedExerciseName, index) => {
+    let exerciseData;
+    for (const category in exercises) {
+      const found = exercises[category].find(exercise => exercise.name === selectedExerciseName);
+      if (found) {
+        exerciseData = found;
+        break;
+      }
+    }
+    const weight = getWeightForRepScheme(wodType, exerciseData, repScheme[index]);//Get same weight for dumbbell movements
+    scheme.push(weight);
+  });
+
+  return scheme;
+
 }
 
 const getWeightForRepScheme = (wodType, exerciseData, reps) => {
-  console.log("getWeightForRepScheme");
-  console.log(exerciseData);
-  console.log(exerciseData.weights);
-  if(!exerciseData.weights){ console.log("Empty?", exerciseData.weights);return "";}
-  console.log(exerciseData.weights.default);
-  return exerciseData.weights.default;
+  if(!exerciseData.weights){ return "";}
+  switch(wodType) {
+    case "For Time":
+    case "AMRAP":
+      if( reps <= 10) {
+        exerciseData.weights.max
+        const numbers = [exerciseData.weights.heavy, exerciseData.weights.extra_heavy, exerciseData.weights.maximum];
+        const weights = [0.50, 0.30, 0.20];
+        return weightedRandomSelection(numbers, weights);
+      }
+      else if( reps <= 20) {
+        exerciseData.weights.max
+        const numbers = [exerciseData.weights.light_medium, exerciseData.weights.medium_heavy, exerciseData.weights.heavy];
+        const weights = [0.20, 0.30, 0.50];
+        return weightedRandomSelection(numbers, weights);
+      }
+      else if( reps > 20) {
+        exerciseData.weights.max
+        const numbers = [exerciseData.weights.light, exerciseData.weights.light_medium, exerciseData.weights.default];
+        const weights = [0.50, 0.30, 0.20];
+        return weightedRandomSelection(numbers, weights);
+      }
+      else {
+        return exerciseData.weights.default;
+      }
+    case "EMOM":
+      return exerciseData.weights.default;
+    case "Tabata":
+      return exerciseData.weights.light;
+    case "Ladder":
+      return exerciseData.weights.default;
+    default:
+      return exerciseData.weights.default;
+  }
+}
+
+function weightedRandomSelection(numbers, weights) {
+  // Filter out undefined numbers and their corresponding weights
+  const validEntries = numbers
+      .map((number, index) => ({ number, weight: weights[index] }))
+      .filter(entry => entry.number !== undefined);
+
+  // If only one valid number remains, return it
+  if (validEntries.length === 1) {
+      return validEntries[0].number;
+  }
+
+  // Calculate the total weight for random selection
+  const totalWeight = validEntries.reduce((acc, entry) => acc + entry.weight, 0);
+  let randomNum = Math.random() * totalWeight;
+
+  for (const entry of validEntries) {
+      if (randomNum < entry.weight) {
+          return entry.number;
+      }
+      randomNum -= entry.weight;
+  }
 }
 
 function getWorkoutDescription(wodType, time, rounds, repScheme, selectedExercises, weightScheme) {
