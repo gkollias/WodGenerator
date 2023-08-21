@@ -40,7 +40,7 @@ const generateWorkout = (equipment) => {
     selectedExercises = getRandomExercises(equipmentExercises, numOfExercises, equipment, wodType);
     repScheme = getRepScheme(wodType, selectedExercises, monostructuralExercises);
     rounds = getRounds(wodType);
-    
+    weightScheme = getWeightScheme(wodType, selectedExercises, repScheme);
     if(isWorkoutFixedTiming(wodType)) {
       workoutTime = getTime(wodType, selectedExercises, rounds, totalWorkoutEstimatedTime);
       break;
@@ -55,7 +55,7 @@ const generateWorkout = (equipment) => {
     console.log("\n\n");
   } while ((totalWorkoutEstimatedTime > workoutTimeInSec || workoutTime > 45 || workoutTime < 5));
 
-  return getWorkoutDescription(wodType, workoutTime, rounds, repScheme, selectedExercises);
+  return getWorkoutDescription(wodType, workoutTime, rounds, repScheme, selectedExercises, weightScheme);
 };
 
 const isWorkoutFixedTiming = (wodType) => {
@@ -155,10 +155,10 @@ const estimateWorkoutDuration = (selectedExercises, repScheme, rounds) => {
   let roundDuration = 0;
   selectedExercises.forEach((selectedExerciseName, index) => {
     let exerciseData;
-    let isMonostructural = false;
+    let isMonostructural = exercises["Monostructural"].find(exercise => exercise.name === selectedExerciseName);
+
     for (const category in exercises) {
       const found = exercises[category].find(exercise => exercise.name === selectedExerciseName);
-      isMonostructural = exercises["Monostructural"].find(exercise => exercise.name === selectedExerciseName);
       if (found) {
         exerciseData = found;
         break;
@@ -203,11 +203,8 @@ const estimateWorkoutDuration = (selectedExercises, repScheme, rounds) => {
     transitionTime = transitionTime * 1.2;//increasing transition time
   }
 
-  return totalEstimatedWorkoutTime;
+  return Math.floor(totalEstimatedWorkoutTime);
 };
-
-
-
 
 function getWodType(wodTypes) {
   let weights = [0.30, 0.50, 0.20, 0.10, 0.00];
@@ -276,44 +273,83 @@ function getRepScheme(wodType, selectedExercises, monostructuralExercises) {
   }
 }
 
-function getWorkoutDescription(wodType, time, rounds, repScheme, selectedExercises) {
+const getWeightScheme = (wodType, selectedExercises, repScheme) => {
+  let scheme = [];
+  switch(wodType) {
+    case "For Time":
+    case "AMRAP":
+    case "EMOM":
+    case "Tabata":
+      console.log("getWeightScheme switch");
+      selectedExercises.map( (selectedExerciseName, index) => {
+        let exerciseData;
+        for (const category in exercises) {
+          const found = exercises[category].find(exercise => exercise.name === selectedExerciseName);
+          if (found) {
+            exerciseData = found;
+            break;
+          }
+        }
+        const weight = getWeightForRepScheme(wodType, exerciseData, repScheme[index]);
+        scheme.push(weight);
+      });
+      
+      console.log("Scheme:", scheme);
+      return scheme;
+    case "Ladder":
+      return [];//unimplemented
+    default:
+      return [];
+  }
+}
+
+const getWeightForRepScheme = (wodType, exerciseData, reps) => {
+  console.log("getWeightForRepScheme");
+  console.log(exerciseData);
+  console.log(exerciseData.weights);
+  if(!exerciseData.weights){ console.log("Empty?", exerciseData.weights);return "";}
+  console.log(exerciseData.weights.default);
+  return exerciseData.weights.default;
+}
+
+function getWorkoutDescription(wodType, time, rounds, repScheme, selectedExercises, weightScheme) {
   switch(wodType) {
     case "For Time":
       let header = "For Time";
-      let roundLiteral = "Perform " + rounds + " rounds of:\n";
+      let roundLiteral = `Perform ${rounds} rounds of:\n`;
       let exercisesLiteral = "";
-      selectedExercises.map( (x, i) => exercisesLiteral += repScheme[i] + " " + x + "\n");
-      let cap = "CAP:" + time + "\n";
+      selectedExercises.map( (x, i) => exercisesLiteral += repScheme[i] + " " + x + (weightScheme[i] ? " " + weightScheme[i] + "kg" : "")  + "\n");
+      let cap = `CAP: ${time} minutes\n`;
       let score = "Score is the total time to complete the workout";
       let wodDescription = header + "\n" + roundLiteral + exercisesLiteral + cap + "\n" + score;
       return wodDescription;
     case "AMRAP":
-      header = `In ${time} minutes perform As Many Reps As Possible`;
+      header = `In ${time} minutes perform As Many Reps As Possible of:\n`;
       exercisesLiteral = "";
-      selectedExercises.map( (x, i) => exercisesLiteral += repScheme[i] + " " + x + "\n");
+      selectedExercises.map( (x, i) => exercisesLiteral += repScheme[i] + " " + x + (weightScheme[i] ? " " + weightScheme[i] + "kg" : "")  + "\n");
       score = "Score is the total reps in all sets";
       wodDescription = header + "\n" + exercisesLiteral + "\n" + score;
       return wodDescription;
     case "EMOM":
-      header = `Every Minute on the minute for ${time} minutes:`;
+      header = `Every Minute on the minute for ${time} minutes:\n`;
       exercisesLiteral = "";
-      selectedExercises.map( (x, i) => exercisesLiteral += repScheme[i] + " " + x + "\n");
+      selectedExercises.map( (x, i) => exercisesLiteral += repScheme[i] + " " + x + (weightScheme[i] ? " " + weightScheme[i] + "kg" : "")  + "\n");
       score = "Score is the total reps in all sets";
       wodDescription = header + "\n" + exercisesLiteral + "\n" + score;
       return wodDescription;
     case "Tabata":
-      header = `For 8 Sets, Work 20\", rest 10\"`;
+      header = `For 8 Sets, Work 20\", rest 10\"\n`;
       exercisesLiteral = "";
-      selectedExercises.map( (x, i) => exercisesLiteral += x + "\n");
+      selectedExercises.map( (x, i) => exercisesLiteral += x +  (weightScheme[i] ? " " + weightScheme[i] + "kg" : "")  + "\n");
       score = "Score is the total reps in all sets";
       wodDescription = header + "\n" + exercisesLiteral + "\n" + score;
       return wodDescription;
     case "Ladder":
       header = "For Time";
       const reps = repScheme.join(", ");
-      roundLiteral = "Perform " + reps + " reps of:\n";
+      roundLiteral = `Perform ${reps} reps of:\n`;
       exercisesLiteral = "";
-      selectedExercises.map( (x, i) => exercisesLiteral += x + "\n");
+      selectedExercises.map( (x, i) => exercisesLiteral += x + (weightScheme[i] ? " " + weightScheme[i] + "kg" : "")  + "\n");
       cap = "CAP:" + time + "\n";
       score = "Score is the total time to complete the workout";
       wodDescription = header + "\n" + roundLiteral + exercisesLiteral + cap + "\n" + score;
@@ -423,7 +459,7 @@ function getRandomReps() {
 function getRepsForEMOM(exercise){
   switch(exercise) {
     case "Pistol Squats":
-      let weights = [0.50, 0, 0.20, 0, 0.30];
+      let weights = [0.50, 0, 0.20, 0, 0.20, 0.10];
       return generateWeightedRandom(10, 15, weights);
     default:
       weights = [0.50, 0.05, 0.05, 0.05, 0.05, 0.30];
