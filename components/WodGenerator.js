@@ -285,7 +285,7 @@ const getWeightScheme = (wodType, selectedExercises, repScheme) => {
         break;
       }
     }
-    const weight = getWeightForRepScheme(wodType, exerciseData, repScheme[index]);//Get same weight for dumbbell movements
+    const weight = getWeightForRepScheme(wodType, exerciseData, repScheme[index]);//TODO: Get same weight for dumbbell movements
     scheme.push(weight);
   });
 
@@ -298,7 +298,7 @@ const getWeightForRepScheme = (wodType, exerciseData, reps) => {
   switch(wodType) {
     case "For Time":
     case "AMRAP":
-      if( reps <= 10) {
+      if( reps < 10) {
         exerciseData.weights.max
         const numbers = [exerciseData.weights.heavy, exerciseData.weights.extra_heavy, exerciseData.weights.maximum];
         const weights = [0.50, 0.30, 0.20];
@@ -306,8 +306,8 @@ const getWeightForRepScheme = (wodType, exerciseData, reps) => {
       }
       else if( reps <= 20) {
         exerciseData.weights.max
-        const numbers = [exerciseData.weights.light_medium, exerciseData.weights.medium_heavy, exerciseData.weights.heavy];
-        const weights = [0.20, 0.30, 0.50];
+        const numbers = [exerciseData.weights.default, exerciseData.weights.medium_heavy, exerciseData.weights.heavy];
+        const weights = [0.60, 0.10, 0.30];
         return weightedRandomSelection(numbers, weights);
       }
       else if( reps > 20) {

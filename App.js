@@ -1,5 +1,5 @@
 import { React, useState } from 'react';
-import { Button, View, Text, StyleSheet, TouchableOpacity, ScrollView } from 'react-native';
+import { Button, View, Text, StyleSheet, TouchableOpacity, ScrollView, ImageBackground } from 'react-native';
 import { NavigationContainer } from '@react-navigation/native';
 import { createStackNavigator } from '@react-navigation/stack';
 import { StatusBar } from 'expo-status-bar';
@@ -8,13 +8,20 @@ import WodGenerator from './components/WodGenerator';
 const Stack = createStackNavigator();
 
 const HomeScreen = ({ navigation }) => (
-  <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center' }}>
-    <Text>Home Screen</Text>
-    <Button
-      title="Go to Equipment"
-      onPress={() => navigation.navigate('Equipment')}
-    />
-  </View>
+  <ImageBackground 
+    source={{uri: 'https://example.com/background-image.jpg'}} 
+    style={styles.background}
+  >
+    <View style={styles.container}>
+      <Text style={styles.title}>Home Screen</Text>
+      <TouchableOpacity
+        style={styles.button}
+        onPress={() => navigation.navigate('Equipment')}
+      >
+        <Text style={styles.buttonText}>Select Equipment</Text>
+      </TouchableOpacity>
+    </View>
+  </ImageBackground>
 );
 
 // const EquipmentScreen = ({ navigation }) => (
@@ -118,5 +125,33 @@ const styles = StyleSheet.create({
   singleEquipmentText: {
     color: '#333',
     fontSize: 16,
+  },
+  background: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  container: {
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: 'rgba(0,0,0,0.5)',
+    padding: 20,
+    borderRadius: 10,
+  },
+  title: {
+    fontSize: 24,
+    fontWeight: 'bold',
+    color: 'white',
+    marginBottom: 20,
+  },
+  button: {
+    backgroundColor: '#1E90FF',
+    paddingVertical: 10,
+    paddingHorizontal: 20,
+    borderRadius: 5,
+  },
+  buttonText: {
+    fontSize: 18,
+    color: 'white',
   },
 });
